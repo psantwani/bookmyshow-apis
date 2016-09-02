@@ -2,6 +2,7 @@ var request = require('request');
 var express = require('express');
 var bodyParser = require('body-parser');
 var apicache = require('apicache').options({ debug: true }).middleware;
+var port = process.env.PORT || '61616';
 
 var $;
 require("jsdom").env("", function(err, window) {
@@ -17,8 +18,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.set('json spaces', 40);
 
-app.listen('9000', function(){
-	console.log('Listening on port 9000');
+app.listen(port, function(){
+	console.log('Listening on port ' + port);
 });
 
 app.get('/', function(req,res){
