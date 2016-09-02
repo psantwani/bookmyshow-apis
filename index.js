@@ -2,6 +2,8 @@ var request = require('request');
 var express = require('express');
 var bodyParser = require('body-parser');
 var apicache = require('apicache').options({ debug: true }).middleware;
+var engines = require('consolidate');
+var path = require('path');
 
 var $;
 require("jsdom").env("", function(err, window) {
@@ -15,26 +17,52 @@ require("jsdom").env("", function(err, window) {
 var app = new express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 app.set('json spaces', 40);
+app.set('views', __dirname + '/views');
+app.engine('html', engines.mustache);
+app.set('view engine', 'html');
 
 app.listen(process.env.PORT || 61616, function(){
 	console.log('Listening on heroku');
 });
 
 app.get('/', function(req,res){
-	res.send("Magic happens at BookMyShow.");
+	res.render('./index.html');
 });
 
 app.get('/movies', apicache('1 hour'), function(req, res){	
-	movieList('', function(data){		
-		res.json(data);
+	movieList('', function(data){	
+		if(data !== "No data found"){
+			var movieList = [];
+			data.forEach(function(product, i, data){
+				movieList.push(product.ecommerce.click.products[0]);
+				if(i == data.length - 1){
+					res.json(movieList);		
+				}
+			});	
+		}	
+		else{
+			res.json(data);
+		}		
 	});
 });
 
 app.get('/:city/movies', apicache('1 hour'), function(req, res){
 	var city = req.params.city.toLowerCase() + "/";
 	movieList(city, function(data){
-		res.json(data);
+		if(data !== "No data found"){
+			var movieList = [];
+			data.forEach(function(product, i, data){
+				movieList.push(product.ecommerce.click.products[0]);
+				if(i == data.length - 1){
+					res.json(movieList);		
+				}
+			});	
+		}	
+		else{
+			res.json(data);
+		}		
 	});	
 });
 
