@@ -114,7 +114,7 @@ function showtimes(city, movie_name, movie_code, date, callback){
 		  		var pattern = 'var aST_details  =   .*';
 		  		regExFunction(pattern, body, function(res){
 		  			if(res){	  				
-		  				var movieList = res.split("var aST_details  =   JSON.parse('")[1].replace(/'/g, "").slice(0,-2);		  				
+		  				var movieList = JSON.parse(res.split("var aST_details  =   JSON.parse('")[1].replace(/'/g, "").slice(0,-2));		  				
 		  				return callback(movieList);
 		  			}
 		  			else{	  				
@@ -131,6 +131,7 @@ function getCityCode(city, callback){
 }
 
 function movieList(city, filter, callback){
+	console.log('https://in.bookmyshow.com/' + city + 'movies' + filter);
 	request('https://in.bookmyshow.com/' + city + 'movies' + filter, function (error, response, body) {
 	  	if (!error && response.statusCode == 200) {
 	  		var pattern = 'var productClickArray = .*';
