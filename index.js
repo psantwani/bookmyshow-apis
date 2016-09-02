@@ -48,15 +48,6 @@ app.get('/movies', apicache('1 hour'), function(req, res){
 	});
 });
 
-/**
-app.get('/movies/:filter', apicache('1 hour'), function(req, res){
-	var filter = '/' + req.params.filter;
-	movieListFiltered('', filter, function(data){
-		res.send(data);
-	});
-});
-**/
-
 
 app.get('/:city/movies', apicache('1 hour'), function(req, res){
 	var city = req.params.city.toLowerCase() + "/";
@@ -75,17 +66,6 @@ app.get('/:city/movies', apicache('1 hour'), function(req, res){
 		}		
 	});	
 });
-
-/**
-app.get('/:city/movies/:filter', apicache('1 hour'), function(req, res){
-	var city = req.params.city;
-	var filter = '/' + req.params.filter;
-	movieList(city, filter, function(data){
-		res.send(data);
-	});
-});
-**/
-
 
 app.get('/movies/:movie_name/:movie_code', function(req, res){
 	var movie_name = req.params.movie_name.toLowerCase();
