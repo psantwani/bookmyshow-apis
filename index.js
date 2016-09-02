@@ -32,7 +32,7 @@ app.get('/', function(req,res){
 });
 
 app.get('/movies', apicache('1 hour'), function(req, res){	
-	movieList('', function(data){	
+	movieList('', '', function(data){	
 		if(data !== "No data found"){
 			var movieList = [];
 			data.forEach(function(product, i, data){
@@ -60,7 +60,7 @@ app.get('/movies/:filter', apicache('1 hour'), function(req, res){
 
 app.get('/:city/movies', apicache('1 hour'), function(req, res){
 	var city = req.params.city.toLowerCase() + "/";
-	movieList(city, function(data){
+	movieList(city, '', function(data){
 		if(data !== "No data found"){
 			var movieList = [];
 			data.forEach(function(product, i, data){
