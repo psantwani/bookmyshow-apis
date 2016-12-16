@@ -4,8 +4,10 @@ var bodyParser = require('body-parser');
 var apicache = require('apicache').options({ debug: true }).middleware;
 var engines = require('consolidate');
 var path = require('path');
+var cheerio = require('cheerio');
 
 var $;
+
 require("jsdom").env("", function(err, window) {
     if (err) {
         console.error(err);
@@ -45,6 +47,18 @@ app.get('/movies', apicache('1 hour'), function(req, res){
 		else{
 			res.json(data);
 		}		
+	});
+});
+
+app.get('/venueList', apicache('1 day'), function(req, res){
+	venueList(function(data){
+		res.send(data);	
+	});	
+});
+
+app.get('/region', apicache('1 day'), function(req, res){
+	regions(function(data){
+		res.send(data);
 	});
 });
 
@@ -110,8 +124,8 @@ function getCityCode(city, callback){
 	return callback("mumbai");
 }
 
-function movieList(city, filter, callback){
-	console.log('https://in.bookmyshow.com/' + city + 'movies' + filter);
+
+function movieList(city, filter, callback){	
 	request('https://in.bookmyshow.com/' + city + 'movies' + filter, function (error, response, body) {
 	  	if (!error && response.statusCode == 200) {
 	  		var pattern = 'var productClickArray = .*';
@@ -125,6 +139,68 @@ function movieList(city, filter, callback){
 	  			}  			
 	  		});	  		
 	  	}
+	});
+}
+
+function venueList(callback){
+	var url = "http://in.bookmyshow.com/cinemas";
+	request(url, function(err, response, body){
+		let $ = cheerio.load(body);
+		var venues = [];
+		var movies = $(".__cinema-text > a");
+		for(let key in movies){
+			if(!isNaN(key)){			
+				var venue = {};
+				var movie = movies[key];
+				var href = movie.attribs.href;
+				var name = movie.children[0].data;				
+				venue["name"] = name;
+				venue["code"] = href.slice(-4);
+				venues.push(venue);
+			}
+		}
+		//console.log(venues);
+		return callback(venues)
+	});
+}
+
+
+function regions(callback){
+	var url = "https://in.bookmyshow.com/serv/getData/?cmd=GETREGIONS";
+	request(url, function(err, response, body){
+		var pattern = 'var regionlst={(.*)}';
+		var regionsInfo = [];
+		regExFunction(pattern, body, function(res){			
+			res = res.toString();
+			if(res){				
+				var abc = res.split("var regionlst=");
+				console.log("Result");
+				//console.log(abc[1])
+				var text = abc[1];
+				var pqr = text.split(";var regionalias=[");
+				var regions = pqr[0];
+
+
+				//console.log(JSON.parse(regions));
+
+				regions = JSON.parse(regions);
+
+				for(key in regions){
+					
+					subregions = regions[key];
+					for(var i = 0 ; i < subregions.length; i++){
+						var subregion = subregions[i];
+						subregion["state"] = key;
+						regionsInfo.push(subregion);
+					}
+				}
+
+				return callback(regionsInfo);
+			}
+			else{
+				return callback("No data found");
+			}
+		});
 	});
 }
 
